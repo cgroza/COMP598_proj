@@ -4,6 +4,7 @@ import pandas as pd
 from sklearn import datasets, linear_model
 import sys
 
+print("Loading data")
 # load data
 tissue = os.path.join("simulated_data", "TWAS", "tissue0")
 genotypes = pd.read_csv(os.path.join("simulated_data", "genotype", "mini_test_genotype.csv"))
@@ -18,6 +19,7 @@ for gene_csv in os.listdir(tissue):
     eqtls = eqtls.set_index("Unnamed: 0").T
     genes[os.path.splitext(os.path.basename(gene_csv))[0]] = eqtls
 
+print("Imputing gene expression")
 # will contain imputed gene expression for each gene in each sample
 imputed_expression = {}
 # impute
@@ -32,6 +34,7 @@ for gene in genes:
         for sample in range(n_samples):
             imputed_expression[gene][sample] = imputed_expression[gene][sample] + genotypes[snp][sample] * eqtl_effect
 
+print("Fitting TWAS")
 # Gene data to regress on
 gene_expr = pd.DataFrame(imputed_expression)
 # git TWAS
