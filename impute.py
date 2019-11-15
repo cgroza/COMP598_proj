@@ -1,10 +1,12 @@
 import numpy as np
 import pandas as pd
+from sklearn import datasets, linear_model
 import sys
 
 # load data
 tissue = os.path.join("simulated_data", "TWAS", "tissue0")
 genotypes = pd.read_csv(os.path.join("simulated_data", "genotype", "mini_test_genotype.csv"))
+phenotypes = pd.read_csv(os.path.join("simulated_data", "phenotype", "mini_test_phenotype.csv"))
 n_samples = len(genotypes)
 
 genes = {}
@@ -29,5 +31,9 @@ for gene in genes:
         for sample in range(n_samples):
             imputed_expression[gene][sample] = imputed_expression[gene][sample] + genotypes[snp][sample] * eqtl_effect
 
-
-    print("Imputed " + gene + " " + str(imputed_expression[gene]))
+# Gene data to regress on
+gene_expr = pd.DataFrame(imputed_expression)
+# git TWAS
+twas = linear_model.LinearRegression()
+twas.fit(gene_expr, phenotypes['phenotye'])
+print("The TWAS R2 is " + str(twas.score(gene_expr, phenotypes['phenotye'])))
