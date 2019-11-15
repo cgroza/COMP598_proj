@@ -24,15 +24,10 @@ print("Imputing gene expression")
 imputed_expression = {}
 # impute
 for gene in genes:
-    # baseline expression is 0
-    imputed_expression[gene] = [0] * n_samples
-    # add the effect of each SNP to the baseline gene expression
-    for snp in genes[gene]:
-        # effect of eQTL on gene expression
-        eqtl_effect = genes[gene][snp]["w_hat"]
-        # add the effect of eQTL weighted by genotype for each sample
-        for sample in range(n_samples):
-            imputed_expression[gene][sample] = imputed_expression[gene][sample] + genotypes[snp][sample] * eqtl_effect
+    gene_eqtl_effects = genes[gene]
+    sample_eqtls = genotypes.loc[:, list(gene_eqtl_effects.columns)]
+    imputed_expression[gene] = sample_eqtls.dot(gene_eqtl_effects.T['w_hat'])
+
 
 print("Cross-validating TWAS")
 # Gene data to regress on
