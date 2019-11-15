@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
-from sklearn import datasets, linear_model
+from sklearn import datasets, linear_model, model_selection
 import sys
 
 print("Loading data")
@@ -34,10 +34,11 @@ for gene in genes:
         for sample in range(n_samples):
             imputed_expression[gene][sample] = imputed_expression[gene][sample] + genotypes[snp][sample] * eqtl_effect
 
-print("Fitting TWAS")
+print("Cross-validating TWAS")
 # Gene data to regress on
 gene_expr = pd.DataFrame(imputed_expression)
-# git TWAS
+# cross-validate TWAS
 twas = linear_model.LinearRegression()
-twas.fit(gene_expr, phenotypes['phenotye'])
-print("The TWAS R2 is " + str(twas.score(gene_expr, phenotypes['phenotye'])))
+crossval_scores = model_selection.cross_val_score(twas, genotypes, phenotypes['phenotye'], cv=5)
+# twas.fit(gene_expr, phenotypes['phenotye'])
+print("The cross validation TWAS R2 are " + str(crossval_scores))
