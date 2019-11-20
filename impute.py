@@ -3,12 +3,19 @@ import numpy as np
 import pandas as pd
 from sklearn import datasets, linear_model, model_selection
 import sys
+import pickle
+
+os.environ["OMP_NUM_THREADS"] = "10" # export OMP_NUM_THREADS=4
+os.environ["OPENBLAS_NUM_THREADS"] = "10" # export OPENBLAS_NUM_THREADS=4 
+os.environ["MKL_NUM_THREADS"] = "10" # export MKL_NUM_THREADS=6
+os.environ["VECLIB_MAXIMUM_THREADS"] = "10" # export VECLIB_MAXIMUM_THREADS=4
+os.environ["NUMEXPR_NUM_THREADS"] = "10" # export NUMEXPR_NUM_THREADS=6
 
 print("Loading data")
 # load data
-tissue = os.path.join("simulated_data", "TWAS", "tissue0")
-genotypes = pd.read_csv(os.path.join("simulated_data", "genotype", "mini_test_genotype.csv"))
-phenotypes = pd.read_csv(os.path.join("simulated_data", "phenotype", "mini_test_phenotype.csv"))
+tissue = os.path.join("simulated_data", "eQTL", "tissue1")
+genotypes = pd.read_csv(os.path.join("simulated_data", "genotype", "TWAS_genotype.csv.gz"))
+phenotypes = pd.read_csv(os.path.join("simulated_data", "phenotype", "TWAS_phenotype.csv"))
 n_samples = len(genotypes)
 
 genes = {}
@@ -19,7 +26,7 @@ for gene_csv in os.listdir(tissue):
     eqtls = eqtls.set_index("Unnamed: 0").T
     genes[os.path.splitext(os.path.basename(gene_csv))[0]] = eqtls
 
-print("Imputing gene expression")
+print("Imputing train gene expression")
 # will contain imputed gene expression for each gene in each sample
 imputed_expression = {}
 # impute
@@ -29,11 +36,13 @@ for gene in genes:
     imputed_expression[gene] = sample_eqtls.dot(gene_eqtl_effects.T['w_hat'])
 
 
-print("Cross-validating TWAS")
+print("Training TWAS")
 # Gene data to regress on
 gene_expr = pd.DataFrame(imputed_expression)
+gene_expr.to_csv("train_gene_exp.csv")
 # cross-validate TWAS
 twas = linear_model.LinearRegression()
-crossval_scores = model_selection.cross_val_score(twas, genotypes, phenotypes['phenotye'], cv=5)
-# twas.fit(gene_expr, phenotypes['phenotye'])
-print("The cross validation TWAS R2 are " + str(crossval_scores))
+twas.fit(genotypes, phenotypes['phenotye'])
+pickle.dump(twas, open("fitted_twas.pickle", 'wb'))
+
+print("The fit TWAS R2 is " + str(twas.score(genotypes, phenotypes['phenotye'])))

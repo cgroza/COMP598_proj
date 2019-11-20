@@ -6,7 +6,7 @@ gwas <- read_tsv("simulated_data/GWAS/simulated_trait.sumstats") %>% arrange(SNP
 
 
 
-genotype <- read.snps.long(files = "simulated_data/genotype/long_snps.csv.gz",
+genotype <- read.snps.long(files = "long_snps.csv.gz",
                           sample.id = paste(1:5000),
                           snp.id = gwas$SNP_ID,
                           verbose = TRUE, codes = c("0","1", "2"),
