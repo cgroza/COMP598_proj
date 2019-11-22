@@ -1,0 +1,11 @@
+* Manhattan plot
+ #+BEGIN_SRC R :exports results :results output graphics :file manhatan_plot.png :session *R*
+   library(tidyverse)
+   library(qqman)
+   sum.stats <- read_tsv("simulated_data/GWAS/simulated_trait.sumstats") %>%
+     group_by(CHR) %>% arrange(CHR, POS)
+   manhattan(sum.stats, bp="POS", snp = "SNP_ID", p="PVAL", main="Simulated GWAS")
+ #+END_SRC 
+
+ #+RESULTS:
+ [[file:manhatan_plot.png]]
